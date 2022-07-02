@@ -1,24 +1,18 @@
-using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore;
+using DesafioImplanta.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddDbContext<DesafioContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DevConnection"));
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-{
-    var configuration = new ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory())
-        .AddJsonFile("appsettings.json")
-        .Build();
-
-    var connectionString = configuration.GetConnectionString("AppDb");
-    optionsBuilder.UseSqlServer(connectionString);
-}
 
 var app = builder.Build();
 
