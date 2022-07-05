@@ -3,8 +3,8 @@ using DesafioImplanta.Models;
 using DesafioImplanta.Util;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using System.Net;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace DesafioImplanta.Controllers
 {
@@ -20,7 +20,7 @@ namespace DesafioImplanta.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<dynamic> Get([FromQuery] string? nome = null,
+        public async Task<ActionResult<IEnumerable<dynamic>>> Get([FromQuery] string? nome = null,
                                              [FromQuery] int? numeroRegistroInicio = null,
                                              [FromQuery] int? numeroRegistroFim = null,
                                              [FromQuery] bool? exibirSomenteAtivos = null)
@@ -48,17 +48,15 @@ namespace DesafioImplanta.Controllers
             if (exibirSomenteAtivos == true)
                 profissionais = profissionais.Where(x => x.Ativo == true);
 
-            return profissionais.ToList();
+            return Ok(await profissionais.ToListAsync());
         }
 
-        // GET api/<ProfissionalController>/5
         [HttpGet("{id}")]
-        public Profissional Get(int id)
+        public async Task<ActionResult<List<Profissional>>> Get(int id)
         {
-            return _context.Profissionals.FirstOrDefault(x => x.Id == id) ?? new Profissional();
+            return Ok(await _context.Profissionals.FirstOrDefaultAsync(x => x.Id == id) ?? new Profissional());
         }
 
-        // POST api/<ProfissionalController>
         [HttpPost]
         public async Task<ActionResult<List<Profissional>>> Post([FromBody] Profissional profissional)
         {
@@ -71,27 +69,57 @@ namespace DesafioImplanta.Controllers
             if (_context.Profissionals.Any(x => x.NomeCompleto == profissional.NomeCompleto))
                 return BadRequest("Nome já existe");
             
-            var ultimoRegistro = _context.Profissionals.OrderByDescending(x => x.NumeroRegistro).Select(x => x.NumeroRegistro).FirstOrDefault();
+            int ultimoRegistro = _context.Profissionals.OrderByDescending(x => x.NumeroRegistro).Select(x => x.NumeroRegistro).FirstOrDefault();
             profissional.NumeroRegistro = ultimoRegistro + 1;
             profissional.DataCriacao = DateTime.Now;
 
             _context.Profissionals.Add(profissional);
             await _context.SaveChangesAsync();
 
-            return Ok(await _context.Profissionals.ToListAsync());
+            return StatusCode(HttpStatusCode.Created.GetHashCode(), profissional);
 
         }
 
-        // PUT api/<ProfissionalController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<ActionResult<List<Profissional>>> Put(int id, [FromBody] Profissional request)
         {
+            if (request.DataNascimento.AddYears(18) > DateTime.Now)
+                return BadRequest("Profissional deve ter mais de 18 anos");
+
+            if (Validador.ValidarCPF(request.CPF))
+                return BadRequest("CPF inválido");
+
+            if (_context.Profissionals.Any(x => x.NomeCompleto == request.NomeCompleto && x.Id != id))
+                return BadRequest("Nome já existe");
+            
+            var profissional = _context.Profissionals.FirstOrDefault(x => x.Id == id);
+            if (profissional == null)
+                return BadRequest("Não existe profissional com este id");
+            
+            profissional.NomeCompleto = request.NomeCompleto;
+            profissional.CPF = request.CPF;
+            profissional.DataNascimento = request.DataNascimento;
+            profissional.Sexo = request.Sexo;
+            profissional.Ativo = request.Ativo;
+            profissional.CEP = request.CEP;
+            profissional.Cidade = request.Cidade;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(profissional);
         }
 
-        // DELETE api/<ProfissionalController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
+            var profissional = _context.Profissionals.FirstOrDefault(x => x.Id == id);
+            if (profissional == null)
+                return BadRequest("Não existe profissional com este id");
+            
+            _context.Profissionals.Remove(profissional);
+            await _context.SaveChangesAsync();
+            
+            return NoContent();
         }
     }
 }
