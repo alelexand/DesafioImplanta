@@ -9,7 +9,5 @@ namespace DesafioImplanta.Data
         {
         }
         public DbSet<Profissional> Profissionals { get; set; }
-
-      
     }
 }

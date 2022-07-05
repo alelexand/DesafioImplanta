@@ -1,6 +1,8 @@
 ﻿using DesafioImplanta.Data;
 using DesafioImplanta.Models;
+using DesafioImplanta.Util;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -51,17 +53,33 @@ namespace DesafioImplanta.Controllers
 
         // GET api/<ProfissionalController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public Profissional Get(int id)
         {
-            return "value";
+            return _context.Profissionals.FirstOrDefault(x => x.Id == id) ?? new Profissional();
         }
 
         // POST api/<ProfissionalController>
         [HttpPost]
-        public void Post([FromBody] Profissional profissional)
+        public async Task<ActionResult<List<Profissional>>> Post([FromBody] Profissional profissional)
         {
+            if (profissional.DataNascimento.AddYears(18) > DateTime.Now)
+                return BadRequest("Profissional deve ter mais de 18 anos");
             
+            if (Validador.ValidarCPF(profissional.CPF))
+                return BadRequest("CPF inválido");
             
+            if (_context.Profissionals.Any(x => x.NomeCompleto == profissional.NomeCompleto))
+                return BadRequest("Nome já existe");
+            
+            var ultimoRegistro = _context.Profissionals.OrderByDescending(x => x.NumeroRegistro).Select(x => x.NumeroRegistro).FirstOrDefault();
+            profissional.NumeroRegistro = ultimoRegistro + 1;
+            profissional.DataCriacao = DateTime.Now;
+
+            _context.Profissionals.Add(profissional);
+            await _context.SaveChangesAsync();
+
+            return Ok(await _context.Profissionals.ToListAsync());
+
         }
 
         // PUT api/<ProfissionalController>/5
