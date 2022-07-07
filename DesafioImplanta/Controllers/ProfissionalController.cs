@@ -86,7 +86,7 @@ namespace DesafioImplanta.Controllers
             if (request.DataNascimento.AddYears(18) > DateTime.Now)
                 return BadRequest("Profissional deve ter mais de 18 anos");
 
-            if (Validador.ValidarCPF(request.CPF))
+            if (!Validador.ValidarCPF(request.CPF))
                 return BadRequest("CPF inválido");
 
             if (_context.Profissionals.Any(x => x.NomeCompleto == request.NomeCompleto && x.Id != id))
