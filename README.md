@@ -1,33 +1,33 @@
 # DesafioImplanta
 
-API REST em **.NET 6** para cadastro de profissionais, com validação de CPF, persistência em **SQL Server** via **Entity Framework Core** e documentação com **Swagger**.
+**.NET 6** REST API for registering professionals, with Brazilian CPF (taxpayer ID) validation, **SQL Server** persistence through **Entity Framework Core**, and **Swagger** documentation.
 
 ## Endpoints
 
-| Método | Rota | Descrição |
+| Method | Route | Description |
 |---|---|---|
-| `GET` | `/api/Profissional?nome=` | Lista profissionais, com filtro opcional por nome |
-| `GET` | `/api/Profissional/{id}` | Busca um profissional pelo id |
-| `POST` | `/api/Profissional` | Cadastra um profissional (valida o CPF) |
-| `PUT` | `/api/Profissional/{id}` | Atualiza um profissional |
-| `DELETE` | `/api/Profissional/{id}` | Remove um profissional |
+| `GET` | `/api/Profissional?nome=` | Lists professionals, with an optional name filter |
+| `GET` | `/api/Profissional/{id}` | Gets a professional by id |
+| `POST` | `/api/Profissional` | Registers a professional (validates the CPF) |
+| `PUT` | `/api/Profissional/{id}` | Updates a professional |
+| `DELETE` | `/api/Profissional/{id}` | Deletes a professional |
 
-Campos do cadastro: nome completo, data de nascimento, sexo, CPF, CEP, cidade, renda (opcional) e status ativo.
+Fields: full name, date of birth, sex, CPF, postal code (CEP), city, income (optional) and active status.
 
-## Como rodar
+## Getting started
 
-1. Ajuste a connection string `DevConnection` em `DesafioImplanta/appsettings.json` para o seu SQL Server.
-2. Crie o banco com as migrations:
+1. Set the `DevConnection` connection string in `DesafioImplanta/appsettings.json` to your SQL Server.
+2. Create the database from the migrations:
    ```bash
    dotnet ef database update --project DesafioImplanta
    ```
-3. Rode a API:
+3. Run the API:
    ```bash
    dotnet run --project DesafioImplanta
    ```
-4. Abra o Swagger em `https://localhost:<porta>/swagger`.
+4. Open Swagger at `https://localhost:<port>/swagger`.
 
-## Tecnologias
+## Tech stack
 
 - C# / .NET 6 / ASP.NET Core Web API
 - Entity Framework Core 6 + SQL Server
